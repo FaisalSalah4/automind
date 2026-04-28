@@ -1,0 +1,23 @@
+{
+  "name": "@automind/shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./supabase": "./src/supabase.ts",
+    "./predictions": "./src/predictions.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'lint ok'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

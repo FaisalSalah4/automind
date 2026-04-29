@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.72",
     "@anthropic-ai/sdk": "^0.39.0",
     "@automind/shared": "*",
     "@radix-ui/react-alert-dialog": "^1.1.4",

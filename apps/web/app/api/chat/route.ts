@@ -55,18 +55,42 @@ Today: ${new Date().toISOString().split('T')[0]}`
 
   const client = new Anthropic()
 
-  const stream = await client.messages.stream({
+  // Strip extra fields added by useChat (id, createdAt) before sending to Anthropic
+  const anthropicMessages = messages.map(
+    ({ role, content }: { role: string; content: string }) => ({ role, content })
+  )
+
+  const anthropicStream = client.messages.stream({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1024,
     system: systemPrompt,
-    messages,
+    messages: anthropicMessages,
   })
 
-  return new Response(stream.toReadableStream(), {
+  // Return raw text chunks — useChat uses streamProtocol: 'text', mobile reads directly
+  const textStream = new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder()
+      try {
+        for await (const event of anthropicStream) {
+          if (
+            event.type === 'content_block_delta' &&
+            event.delta.type === 'text_delta' &&
+            event.delta.text
+          ) {
+            controller.enqueue(encoder.encode(event.delta.text))
+          }
+        }
+      } finally {
+        controller.close()
+      }
+    },
+  })
+
+  return new Response(textStream, {
     headers: {
-      'Content-Type': 'text/event-stream',
+      'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
     },
   })
 }

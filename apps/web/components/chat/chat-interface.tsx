@@ -29,6 +29,7 @@ export function ChatInterface({ cars }: { cars: CarOption[] }) {
   const { messages, input, handleInputChange, handleSubmit, isLoading, setInput } = useChat({
     api: '/api/chat',
     body: { carId: selectedCarId },
+    streamProtocol: 'text',
   })
 
   function sendStarter(question: string) {

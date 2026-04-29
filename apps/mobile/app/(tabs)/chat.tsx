@@ -71,25 +71,14 @@ export default function ChatScreen() {
         const { done, value } = await reader.read()
         if (done) break
 
-        const chunk = decoder.decode(value)
-        const lines = chunk.split('\n')
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6)
-            if (data === '[DONE]') continue
-            try {
-              const parsed = JSON.parse(data)
-              const text = parsed.delta?.text ?? parsed.choices?.[0]?.delta?.content ?? ''
-              if (text) {
-                assistantContent += text
-                setMessages((prev) => {
-                  const updated = [...prev]
-                  updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
-                  return updated
-                })
-              }
-            } catch {}
-          }
+        const text = decoder.decode(value)
+        if (text) {
+          assistantContent += text
+          setMessages((prev) => {
+            const updated = [...prev]
+            updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
+            return updated
+          })
         }
       }
     } catch (err) {

@@ -1,5 +1,7 @@
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { CURRENCY_COOKIE, DEFAULT_CURRENCY, getCurrencySymbol } from '@/lib/currency'
 import { predictUpcomingServices } from '@automind/shared'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +12,10 @@ import Link from 'next/link'
 export default async function CarDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
+  const cookieStore = await cookies()
+  const currencySymbol = getCurrencySymbol(
+    cookieStore.get(CURRENCY_COOKIE)?.value ?? DEFAULT_CURRENCY
+  )
 
   const [{ data: car }, { data: maintenance }, { data: fuel }] = await Promise.all([
     supabase.from('cars').select('*').eq('id', id).single(),
@@ -130,7 +136,7 @@ export default async function CarDetailPage({ params }: { params: Promise<{ id: 
                   <div className="text-right">
                     <p className="text-sm">{m.mileage_at_service.toLocaleString()} km</p>
                     {m.cost && (
-                      <p className="text-xs text-muted-foreground">${Number(m.cost).toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">{currencySymbol}{Number(m.cost).toFixed(2)}</p>
                     )}
                   </div>
                 </div>

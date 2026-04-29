@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { predictUpcomingServices } from '@automind/shared'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Wrench, Plus, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { CarSelector } from '@/components/maintenance/car-selector'
+import { CURRENCY_COOKIE, DEFAULT_CURRENCY, getCurrencySymbol } from '@/lib/currency'
 
 export default async function MaintenancePage({
   searchParams,
@@ -14,6 +16,10 @@ export default async function MaintenancePage({
 }) {
   const { carId } = await searchParams
   const supabase = await createClient()
+  const cookieStore = await cookies()
+  const currencySymbol = getCurrencySymbol(
+    cookieStore.get(CURRENCY_COOKIE)?.value ?? DEFAULT_CURRENCY
+  )
 
   const { data: cars } = await supabase
     .from('cars')
@@ -151,7 +157,7 @@ export default async function MaintenancePage({
                   </div>
                   <div className="text-right space-y-1 ml-4 shrink-0">
                     {log.cost && (
-                      <p className="font-semibold">${Number(log.cost).toFixed(2)}</p>
+                      <p className="font-semibold">{currencySymbol}{Number(log.cost).toFixed(2)}</p>
                     )}
                     {log.invoice_signed_url && (
                       <a

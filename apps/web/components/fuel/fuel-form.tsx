@@ -17,7 +17,15 @@ interface CarOption {
   current_mileage: number
 }
 
-export function FuelForm({ cars, defaultCarId }: { cars: CarOption[]; defaultCarId: string }) {
+export function FuelForm({
+  cars,
+  defaultCarId,
+  currencySymbol,
+}: {
+  cars: CarOption[]
+  defaultCarId: string
+  currencySymbol: string
+}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -118,7 +126,7 @@ export function FuelForm({ cars, defaultCarId }: { cars: CarOption[]; defaultCar
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="cost_per_liter">Price / Liter ($)</Label>
+          <Label htmlFor="cost_per_liter">Price / Liter ({currencySymbol})</Label>
           <Input
             id="cost_per_liter"
             type="number"
@@ -133,7 +141,7 @@ export function FuelForm({ cars, defaultCarId }: { cars: CarOption[]; defaultCar
 
       {totalCost && (
         <div className="rounded-md bg-muted px-4 py-2 text-sm">
-          Total: <span className="font-semibold">${totalCost}</span>
+          Total: <span className="font-semibold">{currencySymbol}{totalCost}</span>
         </div>
       )}
 

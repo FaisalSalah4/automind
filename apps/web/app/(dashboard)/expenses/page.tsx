@@ -1,9 +1,15 @@
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ExpenseCharts } from '@/components/expenses/expense-charts'
+import { CURRENCY_COOKIE, DEFAULT_CURRENCY, getCurrencySymbol } from '@/lib/currency'
 
 export default async function ExpensesPage() {
   const supabase = await createClient()
+  const cookieStore = await cookies()
+  const currencySymbol = getCurrencySymbol(
+    cookieStore.get(CURRENCY_COOKIE)?.value ?? DEFAULT_CURRENCY
+  )
 
   const { data: cars } = await supabase
     .from('cars')
@@ -65,7 +71,7 @@ export default async function ExpensesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalMaintenanceCost.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{currencySymbol}{totalMaintenanceCost.toFixed(2)}</div>
           </CardContent>
         </Card>
         <Card>
@@ -73,7 +79,7 @@ export default async function ExpensesPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Fuel</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalFuelCost.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{currencySymbol}{totalFuelCost.toFixed(2)}</div>
           </CardContent>
         </Card>
         <Card>
@@ -84,7 +90,7 @@ export default async function ExpensesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {costPerKm !== null ? `$${costPerKm.toFixed(3)}` : '—'}
+              {costPerKm !== null ? `${currencySymbol}${costPerKm.toFixed(3)}` : '—'}
             </div>
             {kmDriven && (
               <p className="text-xs text-muted-foreground">over {kmDriven.toLocaleString()} km</p>
@@ -98,6 +104,7 @@ export default async function ExpensesPage() {
           maintenance={maintenance ?? []}
           fuel={fuel ?? []}
           byCategory={byCategory}
+          currencySymbol={currencySymbol}
         />
       )}
 

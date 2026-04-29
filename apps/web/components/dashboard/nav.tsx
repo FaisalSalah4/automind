@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { Car as CarType } from '@automind/shared'
+import { CurrencySelector } from '@/components/currency/currency-selector'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -21,9 +22,10 @@ const navItems = [
 interface DashboardNavProps {
   cars: CarType[]
   userEmail: string
+  currency: string
 }
 
-export function DashboardNav({ cars, userEmail }: DashboardNavProps) {
+export function DashboardNav({ cars, userEmail, currency }: DashboardNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -96,7 +98,11 @@ export function DashboardNav({ cars, userEmail }: DashboardNavProps) {
         })}
       </nav>
 
-      <div className="p-4 border-t">
+      <div className="p-4 border-t space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
+          Currency
+        </p>
+        <CurrencySelector current={currency} />
         <button
           onClick={handleSignOut}
           className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"

@@ -21,6 +21,7 @@ interface ExpenseChartsProps {
   maintenance: { type: string; cost: number; service_date: string }[]
   fuel: { total_cost: number; date: string }[]
   byCategory: Record<string, number>
+  currencySymbol: string
 }
 
 function buildMonthlyData(
@@ -42,7 +43,7 @@ function buildMonthlyData(
   return Object.values(months).sort((a, b) => a.month.localeCompare(b.month))
 }
 
-export function ExpenseCharts({ maintenance, fuel, byCategory }: ExpenseChartsProps) {
+export function ExpenseCharts({ maintenance, fuel, byCategory, currencySymbol }: ExpenseChartsProps) {
   const monthlyData = buildMonthlyData(maintenance, fuel)
 
   const pieData = Object.entries(byCategory).map(([name, value]) => ({
@@ -63,7 +64,7 @@ export function ExpenseCharts({ maintenance, fuel, byCategory }: ExpenseChartsPr
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: number) => `$${v.toFixed(2)}`} />
+                <Tooltip formatter={(v: number) => `${currencySymbol}${v.toFixed(2)}`} />
                 <Legend />
                 <Bar dataKey="maintenance" name="Maintenance" fill="#3b82f6" />
                 <Bar dataKey="fuel" name="Fuel" fill="#10b981" />
@@ -92,14 +93,14 @@ export function ExpenseCharts({ maintenance, fuel, byCategory }: ExpenseChartsPr
                   innerRadius={60}
                   outerRadius={100}
                   dataKey="value"
-                  label={({ name, value }) => `${name}: $${value}`}
+                  label={({ name, value }) => `${name}: ${currencySymbol}${value}`}
                   labelLine={false}
                 >
                   {pieData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: number) => `$${v.toFixed(2)}`} />
+                <Tooltip formatter={(v: number) => `${currencySymbol}${v.toFixed(2)}`} />
               </PieChart>
             </ResponsiveContainer>
           ) : (

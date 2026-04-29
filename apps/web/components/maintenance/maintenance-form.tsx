@@ -31,9 +31,10 @@ interface CarOption {
 interface MaintenanceFormProps {
   cars: CarOption[]
   defaultCarId: string
+  currencySymbol: string
 }
 
-export function MaintenanceForm({ cars, defaultCarId }: MaintenanceFormProps) {
+export function MaintenanceForm({ cars, defaultCarId, currencySymbol }: MaintenanceFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -211,7 +212,7 @@ export function MaintenanceForm({ cars, defaultCarId }: MaintenanceFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="m-cost">Cost ($)</Label>
+              <Label htmlFor="m-cost">Cost ({currencySymbol})</Label>
               <Input
                 id="m-cost"
                 type="number"

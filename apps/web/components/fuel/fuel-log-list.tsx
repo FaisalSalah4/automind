@@ -10,7 +10,13 @@ interface FuelLogWithConsumption {
   consumption: number | null
 }
 
-export function FuelLogList({ logs }: { logs: FuelLogWithConsumption[] }) {
+export function FuelLogList({
+  logs,
+  currencySymbol,
+}: {
+  logs: FuelLogWithConsumption[]
+  currencySymbol: string
+}) {
   if (logs.length === 0) {
     return <p className="text-sm text-muted-foreground text-center py-4">No fill-ups logged yet</p>
   }
@@ -22,7 +28,7 @@ export function FuelLogList({ logs }: { logs: FuelLogWithConsumption[] }) {
           <div className="space-y-0.5">
             <p className="text-sm font-medium">{log.date}</p>
             <p className="text-xs text-muted-foreground">
-              {Number(log.liters).toFixed(2)} L @ ${Number(log.cost_per_liter).toFixed(3)}/L
+              {Number(log.liters).toFixed(2)} L @ {currencySymbol}{Number(log.cost_per_liter).toFixed(3)}/L
             </p>
             <p className="text-xs text-muted-foreground">
               {log.mileage.toLocaleString()} km
@@ -35,7 +41,7 @@ export function FuelLogList({ logs }: { logs: FuelLogWithConsumption[] }) {
             )}
           </div>
           <div className="text-right">
-            <p className="text-sm font-semibold">${Number(log.total_cost).toFixed(2)}</p>
+            <p className="text-sm font-semibold">{currencySymbol}{Number(log.total_cost).toFixed(2)}</p>
           </div>
         </div>
       ))}

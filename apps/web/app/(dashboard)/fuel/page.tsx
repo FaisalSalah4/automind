@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -5,9 +6,14 @@ import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { FuelLogList } from '@/components/fuel/fuel-log-list'
 import { FuelForm } from '@/components/fuel/fuel-form'
+import { CURRENCY_COOKIE, DEFAULT_CURRENCY, getCurrencySymbol } from '@/lib/currency'
 
 export default async function FuelPage() {
   const supabase = await createClient()
+  const cookieStore = await cookies()
+  const currencySymbol = getCurrencySymbol(
+    cookieStore.get(CURRENCY_COOKIE)?.value ?? DEFAULT_CURRENCY
+  )
 
   const { data: cars } = await supabase
     .from('cars')
@@ -55,7 +61,7 @@ export default async function FuelPage() {
               <CardTitle>Log Fill-up</CardTitle>
             </CardHeader>
             <CardContent>
-              <FuelForm cars={cars ?? []} defaultCarId={firstCar.id} />
+              <FuelForm cars={cars ?? []} defaultCarId={firstCar.id} currencySymbol={currencySymbol} />
             </CardContent>
           </Card>
 
@@ -64,7 +70,7 @@ export default async function FuelPage() {
               <CardTitle>Fill-up History</CardTitle>
             </CardHeader>
             <CardContent>
-              <FuelLogList logs={logsWithConsumption} />
+              <FuelLogList logs={logsWithConsumption} currencySymbol={currencySymbol} />
             </CardContent>
           </Card>
         </div>

@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { View, Text, ScrollView, RefreshControl } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import { predictUpcomingServices } from '@automind/shared'
 import type { Car, Reminder, ServicePrediction } from '@automind/shared'
+import { useCurrency, CURRENCIES } from '@/lib/currency'
 
 export default function DashboardScreen() {
   const [cars, setCars] = useState<Car[]>([])
   const [reminders, setReminders] = useState<Reminder[]>([])
   const [predictions, setPredictions] = useState<ServicePrediction[]>([])
   const [refreshing, setRefreshing] = useState(false)
+  const { code, setCurrency } = useCurrency()
 
   async function load() {
     const { data: carsData } = await supabase
@@ -108,6 +110,27 @@ export default function DashboardScreen() {
             ))}
           </View>
         )}
+
+        <View className="bg-white rounded-2xl p-4 border border-gray-200">
+          <Text className="font-semibold text-gray-900 mb-3">Currency</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {CURRENCIES.map((c) => (
+              <TouchableOpacity
+                key={c.code}
+                onPress={() => setCurrency(c.code)}
+                className={`px-3 py-1.5 rounded-full border ${
+                  code === c.code
+                    ? 'bg-blue-600 border-blue-600'
+                    : 'bg-white border-gray-300'
+                }`}
+              >
+                <Text className={`text-xs font-medium ${code === c.code ? 'text-white' : 'text-gray-700'}`}>
+                  {c.code} {c.symbol}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
       </View>
     </ScrollView>
   )

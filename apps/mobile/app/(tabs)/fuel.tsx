@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import type { Car, FuelLog } from '@automind/shared'
+import { useCurrency } from '@/lib/currency'
 
 interface FuelLogWithConsumption extends FuelLog {
   consumption: number | null
@@ -11,6 +12,7 @@ export default function FuelScreen() {
   const [car, setCar] = useState<Car | null>(null)
   const [logs, setLogs] = useState<FuelLogWithConsumption[]>([])
   const [refreshing, setRefreshing] = useState(false)
+  const { symbol } = useCurrency()
 
   const [liters, setLiters] = useState('')
   const [costPerLiter, setCostPerLiter] = useState('')
@@ -103,7 +105,7 @@ export default function FuelScreen() {
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-xs text-gray-500 mb-1">$/Liter</Text>
+                <Text className="text-xs text-gray-500 mb-1">{symbol}/Liter</Text>
                 <TextInput
                   className="border border-gray-300 rounded-lg px-3 py-2 text-base"
                   placeholder="1.599"
@@ -124,7 +126,7 @@ export default function FuelScreen() {
             </View>
             {total && (
               <View className="bg-blue-50 rounded-lg px-3 py-2 mb-3">
-                <Text className="text-blue-700 text-sm font-medium">Total: ${total}</Text>
+                <Text className="text-blue-700 text-sm font-medium">Total: {symbol}{total}</Text>
               </View>
             )}
             <TouchableOpacity
@@ -163,7 +165,7 @@ export default function FuelScreen() {
                     )}
                   </View>
                   <Text className="font-semibold text-gray-900">
-                    ${Number(log.total_cost).toFixed(2)}
+                    {symbol}{Number(log.total_cost).toFixed(2)}
                   </Text>
                 </View>
               </View>

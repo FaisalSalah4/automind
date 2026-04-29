@@ -3,12 +3,14 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import { predictUpcomingServices } from '@automind/shared'
 import type { Car, MaintenanceLog, ServicePrediction } from '@automind/shared'
+import { useCurrency } from '@/lib/currency'
 
 export default function MaintenanceScreen() {
   const [car, setCar] = useState<Car | null>(null)
   const [logs, setLogs] = useState<MaintenanceLog[]>([])
   const [predictions, setPredictions] = useState<ServicePrediction[]>([])
   const [refreshing, setRefreshing] = useState(false)
+  const { symbol } = useCurrency()
 
   async function load() {
     const { data: cars } = await supabase
@@ -77,7 +79,7 @@ export default function MaintenanceScreen() {
                     </Text>
                   </View>
                   {log.cost !== undefined && log.cost !== null && (
-                    <Text className="font-semibold text-gray-900">${Number(log.cost).toFixed(2)}</Text>
+                    <Text className="font-semibold text-gray-900">{symbol}{Number(log.cost).toFixed(2)}</Text>
                   )}
                 </View>
               </View>

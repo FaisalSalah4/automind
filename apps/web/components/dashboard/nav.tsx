@@ -40,7 +40,7 @@ export function DashboardNav({ cars, userEmail, currency }: DashboardNavProps) {
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="p-6 border-b">
-        <h1 className="text-xl font-bold text-primary">AutoMind</h1>
+        <h1 className="text-xl font-bold text-primary">CarMind</h1>
         <p className="text-xs text-muted-foreground mt-1 truncate">{userEmail}</p>
       </div>
 
@@ -121,7 +121,7 @@ export function DashboardNav({ cars, userEmail, currency }: DashboardNavProps) {
 
       {/* Mobile header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between border-b bg-background px-4 py-3">
-        <h1 className="text-lg font-bold text-primary">AutoMind</h1>
+        <h1 className="text-lg font-bold text-primary">CarMind</h1>
         <button onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>

@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">AutoMind</CardTitle>
+        <CardTitle className="text-2xl font-bold">CarMind</CardTitle>
         <CardDescription>Sign in to your car maintenance tracker</CardDescription>
       </CardHeader>
       <CardContent>

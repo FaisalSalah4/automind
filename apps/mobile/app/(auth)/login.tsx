@@ -20,7 +20,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View className="flex-1 justify-center px-6">
-        <Text className="text-4xl font-bold text-blue-600 mb-2">AutoMind</Text>
+        <Text className="text-4xl font-bold text-blue-600 mb-2">CarMind</Text>
         <Text className="text-gray-500 mb-8">Sign in to your car tracker</Text>
 
         <Text className="text-sm font-medium text-gray-700 mb-1">Email</Text>

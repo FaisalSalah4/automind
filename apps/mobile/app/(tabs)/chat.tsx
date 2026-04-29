@@ -106,7 +106,7 @@ export default function ChatScreen() {
         {messages.length === 0 && (
           <View className="items-center py-8 space-y-2">
             <Text className="text-2xl">🤖</Text>
-            <Text className="font-semibold text-gray-900">AutoMind AI</Text>
+            <Text className="font-semibold text-gray-900">CarMind AI</Text>
             <Text className="text-gray-500 text-sm text-center">
               Ask anything about your car&apos;s maintenance, costs, or fuel
             </Text>

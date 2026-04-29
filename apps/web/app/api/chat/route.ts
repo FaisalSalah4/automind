@@ -46,7 +46,7 @@ export async function POST(req: Request) {
         .order('created_at', { ascending: false }),
     ])
 
-  const systemPrompt = `You are AutoMind, a smart car assistant. You have the user's complete car data below. Answer questions about maintenance history, costs, fuel consumption, and upcoming services. Be concise and specific.
+  const systemPrompt = `You are CarMind, a smart car assistant. You have the user's complete car data below. Answer questions about maintenance history, costs, fuel consumption, and upcoming services. Be concise and specific.
 
 CAR DATA:
 ${JSON.stringify({ car, maintenance, fuel, reminders }, null, 2)}

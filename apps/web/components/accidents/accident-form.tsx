@@ -227,7 +227,7 @@ export function AccidentForm({ cars, defaultCarId, currencySymbol }: AccidentFor
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="a-location">Location</Label>
+              <Label htmlFor="a-location">Location <span className="text-muted-foreground font-normal">(optional)</span></Label>
               <Input
                 id="a-location"
                 value={fields.location}

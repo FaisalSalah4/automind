@@ -13,6 +13,8 @@ const STARTER_QUESTIONS = [
   'How much have I spent on my car this year?',
   'What maintenance should I expect soon?',
   "What's my average fuel consumption this month?",
+  'Have I had any accidents with this car?',
+  'How much have I paid out of pocket for accident repairs?',
 ]
 
 interface CarOption {
@@ -65,7 +67,7 @@ export function ChatInterface({ cars }: { cars: CarOption[] }) {
           <div className="flex flex-col items-center justify-center h-full space-y-6 text-center">
             <div className="space-y-2">
               <Bot className="h-12 w-12 text-primary mx-auto" />
-              <h3 className="text-lg font-semibold">AutoMind AI Assistant</h3>
+              <h3 className="text-lg font-semibold">CarMind AI Assistant</h3>
               <p className="text-muted-foreground text-sm">
                 Ask me anything about your car&apos;s history, costs, and maintenance
               </p>

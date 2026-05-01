@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Car, Wrench, Fuel, BarChart3, MessageSquare, Bell, LogOut, Menu, X } from 'lucide-react'
+import { Car, Wrench, Fuel, BarChart3, MessageSquare, Bell, LogOut, Menu, X, AlertTriangle } from 'lucide-react'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -17,6 +17,7 @@ const navItems = [
   { href: '/fuel', label: 'Fuel', icon: Fuel },
   { href: '/expenses', label: 'Expenses', icon: BarChart3 },
   { href: '/reminders', label: 'Reminders', icon: Bell },
+  { href: '/accidents', label: 'Accidents', icon: AlertTriangle },
   { href: '/chat', label: 'AI Assistant', icon: MessageSquare },
 ]
 

@@ -39,6 +39,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="accidents"
+        options={{
+          title: 'Accidents',
+          tabBarIcon: ({ color, size }) => <Ionicons name="warning" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="chat"
         options={{
           title: 'AI Chat',

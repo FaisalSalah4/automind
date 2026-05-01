@@ -58,3 +58,25 @@ export type ServicePrediction = {
   kmRemaining: number
   urgency: 'overdue' | 'soon' | 'ok'
 }
+
+export type AccidentLog = {
+  id: string
+  car_id: string
+  user_id?: string
+  date: string
+  title: string
+  description?: string
+  location?: string
+  mileage_at_accident?: number
+  at_fault: boolean
+  third_party_involved: boolean
+  police_report_number?: string
+  insurance_claim_number?: string
+  total_repair_cost?: number
+  insurance_covered?: number
+  out_of_pocket?: number
+  status: 'open' | 'in_repair' | 'settled' | 'closed'
+  damaged_parts: string[]
+  photo_urls: string[]
+  created_at?: string
+}

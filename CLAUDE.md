@@ -32,7 +32,10 @@ automind/
 │   │   │   │   ├── maintenance/
 │   │   │   │   │   ├── page.tsx            # Maintenance log
 │   │   │   │   │   └── new/page.tsx        # Log maintenance
-│   │   │   │   ├── fuel/page.tsx           # Fuel tracker
+│   │   │   │   ├── accidents/
+│   │   │   │   │   ├── page.tsx            # Accident history
+│   │   │   │   │   └── new/page.tsx        # Log accident
+
 │   │   │   │   ├── expenses/page.tsx       # Expense dashboard
 │   │   │   │   └── chat/page.tsx           # AI assistant
 │   │   │   └── api/
@@ -125,6 +128,28 @@ create table reminders (
   created_at timestamptz default now()
 );
 
+create table accident_logs (
+  id uuid primary key default gen_random_uuid(),
+  car_id uuid references cars not null,
+  user_id uuid references auth.users not null,
+  date date not null,
+  title text not null,                          -- short summary, e.g. "Rear-end collision"
+  description text,                             -- full incident description
+  location text,                                -- where it happened
+  mileage_at_accident int,
+  at_fault boolean,                             -- was the user at fault?
+  third_party_involved boolean default false,
+  police_report_number text,
+  insurance_claim_number text,
+  total_repair_cost numeric(10,2),
+  insurance_covered numeric(10,2),              -- amount covered by insurance
+  out_of_pocket numeric(10,2),                  -- computed: total - covered
+  status text default 'open',                   -- 'open' | 'in_repair' | 'settled' | 'closed'
+  damaged_parts text[],                         -- array: ['front_bumper', 'hood', 'headlight_left', ...]
+  photo_urls text[],                            -- Supabase Storage URLs for accident photos
+  created_at timestamptz default now()
+);
+
 -- RLS
 alter table cars enable row level security;
 alter table maintenance_logs enable row level security;
@@ -135,6 +160,8 @@ create policy "own cars" on cars for all using (auth.uid() = user_id);
 create policy "own maintenance" on maintenance_logs for all using (auth.uid() = user_id);
 create policy "own fuel" on fuel_logs for all using (auth.uid() = user_id);
 create policy "own reminders" on reminders for all using (auth.uid() = user_id);
+alter table accident_logs enable row level security;
+create policy "own accidents" on accident_logs for all using (auth.uid() = user_id);
 ```
 
 ---
@@ -177,6 +204,58 @@ const SERVICE_INTERVALS_KM: Record<string, number> = {
 - Overdue badge on dashboard
 - Expo push notifications (mobile)
 
+### 8. Accident Log
+Full accident tracking per car with the following fields:
+
+**Form fields:**
+- `title` — short label (e.g. "Rear-end on Highway 15")
+- `date` — date of accident
+- `location` — text field (street, city, or GPS description)
+- `mileage_at_accident` — odometer reading
+- `at_fault` — yes / no toggle
+- `third_party_involved` — yes / no toggle
+- `police_report_number` — optional text
+- `insurance_claim_number` — optional text
+- `description` — free-text incident description
+- `damaged_parts` — multi-select checklist from a predefined list (see below)
+- `total_repair_cost` — numeric
+- `insurance_covered` — numeric (out-of-pocket auto-computed = total − covered)
+- `status` — dropdown: Open / In Repair / Settled / Closed
+- `photos` — upload 1–5 photos → Supabase Storage bucket `accident-photos`, path `{user_id}/{car_id}/{accident_id}/{n}.jpg`
+
+**Damaged parts checklist (predefined options):**
+```
+Front Bumper, Rear Bumper, Hood, Trunk, Roof,
+Windshield, Rear Window, Left Front Door, Right Front Door,
+Left Rear Door, Right Rear Door, Left Headlight, Right Headlight,
+Left Tail Light, Right Tail Light, Left Front Wheel, Right Front Wheel,
+Left Rear Wheel, Right Rear Wheel, Engine, Airbags, Frame/Chassis, Other
+```
+
+**Accident list page:**
+- Cards sorted by date desc
+- Status badge (color-coded: open = red, in_repair = yellow, settled = blue, closed = grey)
+- Summary: date, title, total cost, out-of-pocket, status
+- Click to expand full detail view
+- Total accident cost stat at top of page
+
+**Detail view:**
+- All fields displayed cleanly
+- Photo gallery (thumbnail grid → lightbox on click)
+- Damaged parts shown as visual badges
+- Edit and delete buttons
+
+**Dashboard widget:**
+- Show count of open/in-repair accidents with a warning icon
+- Link to accidents page
+
+**AI Chat integration:**
+- Inject last 10 accident logs into the AI system prompt context
+- AI should answer questions like:
+  - "How much have I spent on accident repairs?"
+  - "What parts of my car have been damaged before?"
+  - "Is my insurance claim still open?"
+
 ### 7. AI Chat Assistant ⭐
 Full-page chat on both web and mobile. Before each message, fetch user's car data and inject as system context.
 
@@ -188,7 +267,7 @@ export async function POST(req: Request) {
   const { messages, carId } = await req.json()
 
   // Fetch car context
-  const [car, maintenance, fuel, reminders] = await Promise.all([...])
+  const [car, maintenance, fuel, reminders, accidents] = await Promise.all([...])
 
   const systemPrompt = `You are AutoMind, a smart car assistant. You have the user's complete car data below. Answer questions about maintenance history, costs, fuel consumption, and upcoming services. Be concise and specific.
 
@@ -247,6 +326,18 @@ export type Reminder = {
   type: 'mileage' | 'date'; title: string
   due_mileage?: number; due_date?: string; is_done: boolean
 }
+
+export type AccidentLog = {
+  id: string; car_id: string
+  date: string; title: string; description?: string; location?: string
+  mileage_at_accident?: number
+  at_fault: boolean; third_party_involved: boolean
+  police_report_number?: string; insurance_claim_number?: string
+  total_repair_cost?: number; insurance_covered?: number; out_of_pocket?: number
+  status: 'open' | 'in_repair' | 'settled' | 'closed'
+  damaged_parts: string[]
+  photo_urls: string[]
+}
 ```
 
 ---
@@ -294,6 +385,7 @@ npx supabase db push                # Apply migrations
 - [ ] Expense dashboard with charts
 - [ ] Mileage-based maintenance predictions
 - [ ] Date + mileage reminders
+- [ ] Accident log with damaged parts, photos, costs, insurance tracking
 - [ ] AI chat with full car context + streaming responses
 - [ ] Works on web (Vercel) + mobile (Expo Go)
 - [ ] RLS enabled and tested on all tables

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { predictUpcomingServices } from '@automind/shared'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Car, Wrench, Fuel, Bell } from 'lucide-react'
+import { Car, Wrench, Fuel, Bell, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -22,7 +22,21 @@ export default async function DashboardPage() {
       .order('created_at', { ascending: false }),
   ])
 
+  const firstCarId = cars?.[0]?.id ?? null
+  const { data: activeAccidents } = firstCarId
+    ? await supabase
+        .from('accident_logs')
+        .select('id, status, out_of_pocket')
+        .eq('car_id', firstCarId)
+        .in('status', ['open', 'in_repair'])
+    : { data: [] }
+
   const firstCar = cars?.[0]
+  const activeAccidentCount = activeAccidents?.length ?? 0
+  const totalOutOfPocket = (activeAccidents ?? []).reduce(
+    (sum, a) => sum + (Number(a.out_of_pocket) || 0),
+    0
+  )
   let predictions: ReturnType<typeof predictUpcomingServices> = []
 
   if (firstCar) {
@@ -56,7 +70,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">Welcome back to CarMind</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Cars</CardTitle>
@@ -100,6 +114,36 @@ export default async function DashboardPage() {
             <div className="text-2xl font-bold">{overdueReminders.length}</div>
           </CardContent>
         </Card>
+
+        <Link href="/accidents" className="block">
+          <Card className={activeAccidentCount > 0 ? 'border-red-300 dark:border-red-800' : ''}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Incidents</CardTitle>
+              <AlertTriangle
+                className={`h-4 w-4 ${
+                  activeAccidentCount > 0 ? 'text-red-500' : 'text-muted-foreground'
+                }`}
+              />
+            </CardHeader>
+            <CardContent>
+              <div
+                className={`text-2xl font-bold ${
+                  activeAccidentCount > 0 ? 'text-red-600 dark:text-red-400' : ''
+                }`}
+              >
+                {activeAccidentCount}
+              </div>
+              {totalOutOfPocket > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {totalOutOfPocket.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })} out of pocket
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {urgentPredictions.length > 0 && (

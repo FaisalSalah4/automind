@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const [{ data: car }, { data: maintenance }, { data: fuel }, { data: reminders }] =
+  const [{ data: car }, { data: maintenance }, { data: fuel }, { data: reminders }, { data: accidents }] =
     await Promise.all([
       supabase.from('cars').select('*').eq('id', carId).single(),
       supabase
@@ -44,12 +44,18 @@ export async function POST(req: Request) {
         .eq('car_id', carId)
         .eq('is_done', false)
         .order('created_at', { ascending: false }),
+      supabase
+        .from('accident_logs')
+        .select('*')
+        .eq('car_id', carId)
+        .order('date', { ascending: false })
+        .limit(10),
     ])
 
-  const systemPrompt = `You are CarMind, a smart car assistant. You have the user's complete car data below. Answer questions about maintenance history, costs, fuel consumption, and upcoming services. Be concise and specific.
+  const systemPrompt = `You are CarMind, a smart car assistant. You have the user's complete car data below. Answer questions about maintenance history, costs, fuel consumption, upcoming services, and accident history. Be concise and specific.
 
 CAR DATA:
-${JSON.stringify({ car, maintenance, fuel, reminders }, null, 2)}
+${JSON.stringify({ car, maintenance, fuel, reminders, accidents }, null, 2)}
 
 Today: ${new Date().toISOString().split('T')[0]}`
 

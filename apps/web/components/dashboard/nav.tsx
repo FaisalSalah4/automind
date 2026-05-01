@@ -120,7 +120,7 @@ export function DashboardNav({ cars, userEmail, currency }: DashboardNavProps) {
       <aside className="hidden md:flex w-64 flex-col border-r bg-background">{sidebarContent}</aside>
 
       {/* Mobile header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between border-b bg-background px-4 py-3">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between border-b bg-background px-4">
         <h1 className="text-lg font-bold text-primary">CarMind</h1>
         <button onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -129,7 +129,7 @@ export function DashboardNav({ cars, userEmail, currency }: DashboardNavProps) {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-30 pt-14">
+        <div className="md:hidden fixed inset-0 z-30 pt-[56px]">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setMobileOpen(false)}

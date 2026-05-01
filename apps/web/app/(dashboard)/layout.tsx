@@ -23,7 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <DashboardNav cars={cars ?? []} userEmail={user.email ?? ''} currency={currency} />
-      <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      <main className="flex-1 overflow-y-auto p-4 pt-16 md:pt-6 md:p-6">{children}</main>
     </div>
   )
 }

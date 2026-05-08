@@ -64,24 +64,29 @@ export default function ChatScreen() {
       }
 
       const reader = res.body?.getReader()
-      if (!reader) throw new Error('No reader')
 
-      let assistantContent = ''
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+      if (!reader) {
+        // React Native buffers the response — read it all at once
+        const text = await res.text()
+        setMessages((prev) => [...prev, { role: 'assistant', content: text }])
+      } else {
+        let assistantContent = ''
+        setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
-      const decoder = new TextDecoder()
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
+        const decoder = new TextDecoder()
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
 
-        const text = decoder.decode(value)
-        if (text) {
-          assistantContent += text
-          setMessages((prev) => {
-            const updated = [...prev]
-            updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
-            return updated
-          })
+          const text = decoder.decode(value)
+          if (text) {
+            assistantContent += text
+            setMessages((prev) => {
+              const updated = [...prev]
+              updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
+              return updated
+            })
+          }
         }
       }
     } catch (err) {

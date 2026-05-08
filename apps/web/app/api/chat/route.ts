@@ -7,17 +7,18 @@ export async function POST(req: Request) {
 
   // Mobile sends Bearer token; web uses cookies
   const authHeader = req.headers.get('Authorization')
-  const supabase = authHeader?.startsWith('Bearer ')
+  const isMobile = authHeader?.startsWith('Bearer ')
+
+  const supabase = isMobile
     ? createSupabaseClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        { global: { headers: { Authorization: authHeader } } }
+        { global: { headers: { Authorization: authHeader! } } }
       )
     : await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const token = isMobile ? authHeader!.slice('Bearer '.length) : undefined
+  const { data: { user } } = await supabase.auth.getUser(token)
 
   if (!user) {
     return new Response('Unauthorized', { status: 401 })

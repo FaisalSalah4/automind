@@ -58,7 +58,10 @@ export default function ChatScreen() {
         body: JSON.stringify({ messages: updatedMessages, carId: selectedCarId }),
       })
 
-      if (!res.ok) throw new Error('Network error')
+      if (!res.ok) {
+        const body = await res.text()
+        throw new Error(`${res.status}: ${body}`)
+      }
 
       const reader = res.body?.getReader()
       if (!reader) throw new Error('No reader')
@@ -82,9 +85,10 @@ export default function ChatScreen() {
         }
       }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Sorry, I ran into an error. Please try again.' },
+        { role: 'assistant', content: `Error: ${msg}` },
       ])
     } finally {
       setLoading(false)

@@ -3,12 +3,14 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl } f
 import { supabase } from '@/lib/supabase'
 import type { Car, FuelLog } from '@automind/shared'
 import { useCurrency } from '@/lib/currency'
+import { useTheme } from '@/lib/theme'
 
 interface FuelLogWithConsumption extends FuelLog {
   consumption: number | null
 }
 
 export default function FuelScreen() {
+  const { colors } = useTheme()
   const [car, setCar] = useState<Car | null>(null)
   const [logs, setLogs] = useState<FuelLogWithConsumption[]>([])
   const [refreshing, setRefreshing] = useState(false)
@@ -84,87 +86,148 @@ export default function FuelScreen() {
       ? (parseFloat(liters) * parseFloat(costPerLiter)).toFixed(2)
       : null
 
+  const inputStyle = {
+    backgroundColor: colors.input,
+    borderColor: colors.inputBorder,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: colors.text,
+    fontSize: 15,
+  }
+
   return (
     <ScrollView
-      className="flex-1 bg-gray-50"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.activeTab} />
+      }
     >
-      <View className="p-4 space-y-4">
+      <View style={{ padding: 16, gap: 12 }}>
         {car && (
-          <View className="bg-white rounded-2xl p-4 border border-gray-200">
-            <Text className="font-semibold text-gray-900 mb-3">Log Fill-up</Text>
-            <View className="flex-row gap-3 mb-3">
-              <View className="flex-1">
-                <Text className="text-xs text-gray-500 mb-1">Liters</Text>
+          <View
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: 20,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: colors.cardBorder,
+            }}
+          >
+            <Text style={{ fontWeight: '700', color: colors.text, fontSize: 15, marginBottom: 12 }}>
+              Log Fill-up
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>Liters</Text>
                 <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  style={inputStyle}
                   placeholder="45.5"
+                  placeholderTextColor={colors.textMuted}
                   keyboardType="decimal-pad"
                   value={liters}
                   onChangeText={setLiters}
                 />
               </View>
-              <View className="flex-1">
-                <Text className="text-xs text-gray-500 mb-1">{symbol}/Liter</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>{symbol}/Liter</Text>
                 <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  style={inputStyle}
                   placeholder="1.599"
+                  placeholderTextColor={colors.textMuted}
                   keyboardType="decimal-pad"
                   value={costPerLiter}
                   onChangeText={setCostPerLiter}
                 />
               </View>
             </View>
-            <View className="mb-3">
-              <Text className="text-xs text-gray-500 mb-1">Odometer (km)</Text>
+            <View style={{ marginBottom: 12 }}>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>Odometer (km)</Text>
               <TextInput
-                className="border border-gray-300 rounded-lg px-3 py-2 text-base"
+                style={inputStyle}
                 keyboardType="number-pad"
+                placeholderTextColor={colors.textMuted}
                 value={mileage}
                 onChangeText={setMileage}
               />
             </View>
             {total && (
-              <View className="bg-blue-50 rounded-lg px-3 py-2 mb-3">
-                <Text className="text-blue-700 text-sm font-medium">Total: {symbol}{total}</Text>
+              <View
+                style={{
+                  backgroundColor: `${colors.activeTab}22`,
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  marginBottom: 12,
+                }}
+              >
+                <Text style={{ color: colors.activeTab, fontSize: 14, fontWeight: '600' }}>
+                  Total: {symbol}{total}
+                </Text>
               </View>
             )}
             <TouchableOpacity
-              className="bg-blue-600 rounded-lg py-3 items-center"
+              style={{
+                backgroundColor: saving ? colors.textMuted : colors.activeTab,
+                borderRadius: 12,
+                paddingVertical: 13,
+                alignItems: 'center',
+              }}
               onPress={logFuel}
               disabled={saving}
             >
-              <Text className="text-white font-semibold">
+              <Text style={{ color: colors.buttonText, fontWeight: '700', fontSize: 15 }}>
                 {saving ? 'Saving…' : 'Log Fill-up'}
               </Text>
             </TouchableOpacity>
           </View>
         )}
 
-        <View className="bg-white rounded-2xl border border-gray-200">
-          <View className="p-4 border-b border-gray-100">
-            <Text className="font-semibold text-gray-900">Fill-up History</Text>
+        <View
+          style={{
+            backgroundColor: colors.card,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: colors.cardBorder,
+          }}
+        >
+          <View
+            style={{
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.cardBorder,
+            }}
+          >
+            <Text style={{ fontWeight: '700', color: colors.text, fontSize: 15 }}>Fill-up History</Text>
           </View>
           {logs.length === 0 ? (
-            <View className="p-6 items-center">
-              <Text className="text-gray-400">No fill-ups logged yet</Text>
+            <View style={{ padding: 24, alignItems: 'center' }}>
+              <Text style={{ color: colors.textMuted, fontSize: 14 }}>No fill-ups logged yet</Text>
             </View>
           ) : (
             logs.map((log, i) => (
-              <View key={log.id} className={`p-4 ${i < logs.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                <View className="flex-row justify-between items-start">
+              <View
+                key={log.id}
+                style={{
+                  padding: 16,
+                  borderBottomWidth: i < logs.length - 1 ? 1 : 0,
+                  borderBottomColor: colors.cardBorder,
+                }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <View>
-                    <Text className="text-sm font-medium text-gray-900">{log.date}</Text>
-                    <Text className="text-xs text-gray-500">
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{log.date}</Text>
+                    <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
                       {Number(log.liters).toFixed(1)} L · {log.mileage.toLocaleString()} km
                     </Text>
                     {log.consumption !== null && (
-                      <Text className="text-xs text-blue-600 font-medium">
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.activeTab, marginTop: 2 }}>
                         {log.consumption.toFixed(1)} L/100km
                       </Text>
                     )}
                   </View>
-                  <Text className="font-semibold text-gray-900">
+                  <Text style={{ fontWeight: '700', color: colors.text, fontSize: 14 }}>
                     {symbol}{Number(log.total_cost).toFixed(2)}
                   </Text>
                 </View>

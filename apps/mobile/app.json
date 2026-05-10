@@ -4,7 +4,7 @@
     "slug": "automind",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "scheme": "automind",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -14,17 +14,17 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.automind.app",
+      "bundleIdentifier": "com.faisalothman.carmind",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundImage": "./assets/adaptive-icon-background.png"
       },
-      "package": "com.automind.app"
+      "package": "com.faisalothman.carmind"
     },
     "web": {
       "bundler": "metro",

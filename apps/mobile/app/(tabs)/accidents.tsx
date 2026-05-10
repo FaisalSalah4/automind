@@ -14,6 +14,7 @@ import {
 } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import type { AccidentLog } from '@automind/shared'
+import { useTheme } from '@/lib/theme'
 
 const STATUS_LABELS: Record<string, string> = {
   open: 'Open',
@@ -22,30 +23,23 @@ const STATUS_LABELS: Record<string, string> = {
   closed: 'Closed',
 }
 
-const STATUS_BG: Record<string, string> = {
-  open: 'bg-red-100',
-  in_repair: 'bg-amber-100',
-  settled: 'bg-blue-100',
-  closed: 'bg-gray-100',
-}
-
-const STATUS_TEXT: Record<string, string> = {
-  open: 'text-red-700',
-  in_repair: 'text-amber-700',
-  settled: 'text-blue-700',
-  closed: 'text-gray-600',
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  open: { bg: 'rgba(239,68,68,0.15)', text: '#EF4444' },
+  in_repair: { bg: 'rgba(245,158,11,0.15)', text: '#F59E0B' },
+  settled: { bg: 'rgba(59,130,246,0.15)', text: '#3B82F6' },
+  closed: { bg: 'rgba(107,114,128,0.15)', text: '#6B7280' },
 }
 
 const STATUS_OPTIONS = ['open', 'in_repair', 'settled', 'closed'] as const
 
 export default function AccidentsScreen() {
+  const { colors } = useTheme()
   const [carId, setCarId] = useState<string | null>(null)
   const [accidents, setAccidents] = useState<AccidentLog[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  // Form state
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [location, setLocation] = useState('')
@@ -72,9 +66,7 @@ export default function AccidentsScreen() {
     }
   }
 
-  useEffect(() => {
-    load()
-  }, [])
+  useEffect(() => { load() }, [])
 
   async function onRefresh() {
     setRefreshing(true)
@@ -101,7 +93,6 @@ export default function AccidentsScreen() {
     }
 
     setSubmitting(true)
-
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       Alert.alert('Error', 'Not authenticated.')
@@ -134,170 +125,218 @@ export default function AccidentsScreen() {
     }
   }
 
+  const inputStyle = {
+    backgroundColor: colors.input,
+    borderColor: colors.inputBorder,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: colors.text,
+    fontSize: 14,
+  }
+
   return (
-    <View className="flex-1 bg-gray-50">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
-        className="flex-1"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        style={{ flex: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.activeTab} />
+        }
       >
-        <View className="p-4 space-y-3">
+        <View style={{ padding: 16, gap: 12 }}>
           {accidents.length === 0 ? (
-            <View className="bg-white rounded-2xl border border-gray-200 p-8 items-center">
-              <Text className="text-gray-400 text-center text-sm">
+            <View
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: colors.cardBorder,
+                padding: 32,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 14 }}>
                 No accidents logged yet.{'\n'}Tap + to record an incident.
               </Text>
             </View>
           ) : (
-            accidents.map((accident) => (
-              <View
-                key={accident.id}
-                className="bg-white rounded-2xl border border-gray-200 p-4"
-              >
-                <View className="flex-row justify-between items-start">
-                  <View className="flex-1 mr-3">
-                    <Text className="font-semibold text-gray-900 text-base">{accident.title}</Text>
-                    <Text className="text-xs text-gray-400 mt-0.5">{accident.date}</Text>
-                    {accident.location ? (
-                      <Text className="text-xs text-gray-500 mt-0.5">{accident.location}</Text>
-                    ) : null}
-                  </View>
-                  <View className="items-end gap-1">
-                    <View
-                      className={`rounded-full px-2 py-0.5 ${STATUS_BG[accident.status] ?? 'bg-gray-100'}`}
-                    >
-                      <Text
-                        className={`text-xs font-medium ${STATUS_TEXT[accident.status] ?? 'text-gray-600'}`}
-                      >
-                        {STATUS_LABELS[accident.status] ?? accident.status}
-                      </Text>
+            accidents.map((accident) => {
+              const sc = STATUS_COLORS[accident.status] ?? STATUS_COLORS.closed
+              return (
+                <View
+                  key={accident.id}
+                  style={{
+                    backgroundColor: colors.card,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: colors.cardBorder,
+                    padding: 16,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <View style={{ flex: 1, marginRight: 12 }}>
+                      <Text style={{ fontWeight: '700', color: colors.text, fontSize: 15 }}>{accident.title}</Text>
+                      <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{accident.date}</Text>
+                      {accident.location ? (
+                        <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{accident.location}</Text>
+                      ) : null}
                     </View>
-                    {accident.out_of_pocket != null && (
-                      <Text className="text-xs text-gray-500">
-                        Out of pocket: {Number(accident.out_of_pocket).toFixed(2)}
-                      </Text>
-                    )}
+                    <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                      <View
+                        style={{
+                          borderRadius: 100,
+                          paddingHorizontal: 10,
+                          paddingVertical: 4,
+                          backgroundColor: sc.bg,
+                        }}
+                      >
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: sc.text }}>
+                          {STATUS_LABELS[accident.status] ?? accident.status}
+                        </Text>
+                      </View>
+                      {accident.out_of_pocket != null && (
+                        <Text style={{ fontSize: 12, color: colors.textMuted }}>
+                          Out of pocket: {Number(accident.out_of_pocket).toFixed(2)}
+                        </Text>
+                      )}
+                    </View>
                   </View>
                 </View>
-              </View>
-            ))
+              )
+            })
           )}
         </View>
       </ScrollView>
 
-      {/* FAB */}
       <TouchableOpacity
         onPress={() => setShowForm(true)}
-        className="absolute bottom-6 right-6 bg-blue-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
+        style={{
+          position: 'absolute',
+          bottom: 24,
+          right: 24,
+          backgroundColor: colors.activeTab,
+          width: 56,
+          height: 56,
+          borderRadius: 28,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: colors.activeTab,
+          shadowOpacity: 0.4,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 8,
+        }}
         activeOpacity={0.85}
       >
-        <Text className="text-white text-3xl font-light leading-none">+</Text>
+        <Text style={{ color: colors.buttonText, fontSize: 28, fontWeight: '300', lineHeight: 32 }}>+</Text>
       </TouchableOpacity>
 
-      {/* Add Accident Modal */}
       <Modal visible={showForm} animationType="slide" presentationStyle="pageSheet">
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1 bg-white"
+          style={{ flex: 1, backgroundColor: colors.bg }}
         >
-          <View className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100">
-            <Text className="text-lg font-semibold text-gray-900">Log Accident</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 16,
+              paddingVertical: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.cardBorder,
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>Log Accident</Text>
             <Pressable onPress={() => { setShowForm(false); resetForm() }}>
-              <Text className="text-blue-500 text-base">Cancel</Text>
+              <Text style={{ color: colors.activeTab, fontSize: 16 }}>Cancel</Text>
             </Pressable>
           </View>
 
-          <ScrollView className="flex-1 p-4" keyboardShouldPersistTaps="handled">
-            <View className="space-y-4">
-              {/* Title */}
-              <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">Title *</Text>
-                <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white"
-                  value={title}
-                  onChangeText={setTitle}
-                  placeholder="e.g. Rear-end collision on highway"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 4 }}>Title *</Text>
+            <TextInput
+              style={{ ...inputStyle, marginBottom: 12 }}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="e.g. Rear-end collision on highway"
+              placeholderTextColor={colors.textMuted}
+            />
 
-              {/* Date */}
-              <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">Date</Text>
-                <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white"
-                  value={date}
-                  onChangeText={setDate}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 4 }}>Date</Text>
+            <TextInput
+              style={{ ...inputStyle, marginBottom: 12 }}
+              value={date}
+              onChangeText={setDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={colors.textMuted}
+            />
 
-              {/* Location */}
-              <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">Location</Text>
-                <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white"
-                  value={location}
-                  onChangeText={setLocation}
-                  placeholder="Optional"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 4 }}>Location</Text>
+            <TextInput
+              style={{ ...inputStyle, marginBottom: 12 }}
+              value={location}
+              onChangeText={setLocation}
+              placeholder="Optional"
+              placeholderTextColor={colors.textMuted}
+            />
 
-              {/* Status */}
-              <View>
-                <Text className="text-sm font-medium text-gray-700 mb-2">Status</Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {STATUS_OPTIONS.map((s) => (
-                    <Pressable
-                      key={s}
-                      onPress={() => setStatus(s)}
-                      className={`rounded-full px-3 py-1.5 border ${
-                        status === s
-                          ? 'bg-blue-500 border-blue-500'
-                          : 'bg-white border-gray-300'
-                      }`}
-                    >
-                      <Text
-                        className={`text-sm font-medium ${
-                          status === s ? 'text-white' : 'text-gray-700'
-                        }`}
-                      >
-                        {STATUS_LABELS[s]}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-
-              {/* Description */}
-              <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">Description</Text>
-                <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white"
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder="Describe what happened..."
-                  placeholderTextColor="#9ca3af"
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                />
-              </View>
-
-              <TouchableOpacity
-                onPress={handleSubmit}
-                disabled={submitting}
-                className={`rounded-xl py-3 items-center mt-2 ${
-                  submitting ? 'bg-blue-300' : 'bg-blue-500'
-                }`}
-                activeOpacity={0.85}
-              >
-                <Text className="text-white font-semibold text-base">
-                  {submitting ? 'Saving…' : 'Log Accident'}
-                </Text>
-              </TouchableOpacity>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 8 }}>Status</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+              {STATUS_OPTIONS.map((s) => (
+                <Pressable
+                  key={s}
+                  onPress={() => setStatus(s)}
+                  style={{
+                    borderRadius: 100,
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderWidth: 1,
+                    backgroundColor: status === s ? `${colors.activeTab}33` : 'transparent',
+                    borderColor: status === s ? colors.activeTab : colors.inputBorder,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: '600',
+                      color: status === s ? colors.activeTab : colors.textMuted,
+                    }}
+                  >
+                    {STATUS_LABELS[s]}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
+
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 4 }}>Description</Text>
+            <TextInput
+              style={{ ...inputStyle, marginBottom: 20, height: 80, textAlignVertical: 'top' }}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Describe what happened..."
+              placeholderTextColor={colors.textMuted}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+            />
+
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={submitting}
+              style={{
+                backgroundColor: submitting ? colors.textMuted : colors.activeTab,
+                borderRadius: 14,
+                paddingVertical: 14,
+                alignItems: 'center',
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: colors.buttonText, fontWeight: '700', fontSize: 16 }}>
+                {submitting ? 'Saving…' : 'Log Accident'}
+              </Text>
+            </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
       </Modal>

@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import type { Car } from '@automind/shared'
+import { useTheme } from '@/lib/theme'
 
 const WEB_APP_URL = process.env.EXPO_PUBLIC_WEB_URL ?? 'http://localhost:3000'
 
@@ -20,6 +21,7 @@ interface Message {
 }
 
 export default function ChatScreen() {
+  const { colors } = useTheme()
   const [cars, setCars] = useState<Car[]>([])
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -101,22 +103,25 @@ export default function ChatScreen() {
     }
   }
 
+  const canSend = input.trim().length > 0 && !loading
+
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-gray-50"
+      style={{ flex: 1, backgroundColor: colors.bg }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}
     >
       <ScrollView
         ref={scrollRef}
-        className="flex-1 px-4 py-3"
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
         {messages.length === 0 && (
-          <View className="items-center py-8 space-y-2">
-            <Text className="text-2xl">🤖</Text>
-            <Text className="font-semibold text-gray-900">CarMind AI</Text>
-            <Text className="text-gray-500 text-sm text-center">
+          <View style={{ alignItems: 'center', paddingVertical: 32, gap: 8 }}>
+            <Text style={{ fontSize: 40 }}>🤖</Text>
+            <Text style={{ fontWeight: '700', color: colors.text, fontSize: 17 }}>CarMind AI</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: 'center' }}>
               Ask anything about your car&apos;s maintenance, costs, or fuel
             </Text>
           </View>
@@ -125,27 +130,77 @@ export default function ChatScreen() {
         {messages.map((m, i) => (
           <View
             key={i}
-            className={`mb-3 max-w-[85%] px-4 py-3 rounded-2xl ${
-              m.role === 'user'
-                ? 'self-end bg-blue-600'
-                : 'self-start bg-white border border-gray-200'
-            }`}
+            style={{
+              marginBottom: 12,
+              maxWidth: '85%',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderRadius: 18,
+              alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+              backgroundColor:
+                m.role === 'user'
+                  ? colors.activeTab
+                  : colors.card,
+              borderWidth: m.role === 'assistant' ? 1 : 0,
+              borderColor: colors.cardBorder,
+            }}
           >
-            <Text className={m.role === 'user' ? 'text-white' : 'text-gray-900'}>{m.content}</Text>
+            <Text
+              style={{
+                color: m.role === 'user' ? colors.buttonText : colors.text,
+                fontSize: 15,
+                lineHeight: 22,
+              }}
+            >
+              {m.content}
+            </Text>
           </View>
         ))}
 
         {loading && (
-          <View className="self-start bg-white border border-gray-200 rounded-2xl px-4 py-3 mb-3">
-            <ActivityIndicator size="small" color="#3b82f6" />
+          <View
+            style={{
+              alignSelf: 'flex-start',
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.cardBorder,
+              borderRadius: 18,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              marginBottom: 12,
+            }}
+          >
+            <ActivityIndicator size="small" color={colors.activeTab} />
           </View>
         )}
       </ScrollView>
 
-      <View className="p-4 border-t border-gray-200 bg-white flex-row gap-3 items-end">
+      <View
+        style={{
+          padding: 12,
+          borderTopWidth: 1,
+          borderTopColor: colors.cardBorder,
+          backgroundColor: colors.card,
+          flexDirection: 'row',
+          gap: 10,
+          alignItems: 'flex-end',
+        }}
+      >
         <TextInput
-          className="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-base"
+          style={{
+            flex: 1,
+            backgroundColor: colors.input,
+            borderWidth: 1,
+            borderColor: colors.inputBorder,
+            borderRadius: 16,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            fontSize: 15,
+            color: colors.text,
+            maxHeight: 120,
+          }}
           placeholder="Ask about your car…"
+          placeholderTextColor={colors.textMuted}
           value={input}
           onChangeText={setInput}
           multiline
@@ -153,13 +208,26 @@ export default function ChatScreen() {
           onSubmitEditing={sendMessage}
         />
         <TouchableOpacity
-          className={`w-11 h-11 rounded-xl items-center justify-center ${
-            input.trim() && !loading ? 'bg-blue-600' : 'bg-gray-200'
-          }`}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 14,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: canSend ? colors.activeTab : colors.cardBorder,
+          }}
           onPress={sendMessage}
-          disabled={!input.trim() || loading}
+          disabled={!canSend}
         >
-          <Text className={input.trim() && !loading ? 'text-white' : 'text-gray-400'}>↑</Text>
+          <Text
+            style={{
+              color: canSend ? colors.buttonText : colors.textMuted,
+              fontSize: 20,
+              fontWeight: '700',
+            }}
+          >
+            ↑
+          </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

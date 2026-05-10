@@ -1,57 +1,132 @@
 import { useState } from 'react'
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native'
+import { useRouter } from 'expo-router'
 import { supabase } from '@/lib/supabase'
+import { useTheme } from '@/lib/theme'
 
 export default function LoginScreen() {
+  const { colors } = useTheme()
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleLogin() {
+    setError(null)
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) Alert.alert('Error', error.message)
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    if (authError) setError(authError.message)
     setLoading(false)
+  }
+
+  const inputStyle = {
+    backgroundColor: colors.input,
+    borderColor: colors.inputBorder,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: 16,
   }
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      style={{ flex: 1, backgroundColor: colors.bg }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View className="flex-1 justify-center px-6">
-        <Text className="text-4xl font-bold text-blue-600 mb-2">CarMind</Text>
-        <Text className="text-gray-500 mb-8">Sign in to your car tracker</Text>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={{ fontSize: 38, fontWeight: '800', color: colors.activeTab, marginBottom: 6, letterSpacing: -1 }}>
+          CarMind
+        </Text>
+        <Text style={{ fontSize: 16, color: colors.textMuted, marginBottom: 36 }}>
+          Sign in to your car tracker
+        </Text>
 
-        <Text className="text-sm font-medium text-gray-700 mb-1">Email</Text>
+        {error && (
+          <View
+            style={{
+              backgroundColor: 'rgba(239,68,68,0.12)',
+              borderRadius: 10,
+              paddingHorizontal: 14,
+              paddingVertical: 10,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: 'rgba(239,68,68,0.3)',
+            }}
+          >
+            <Text style={{ color: '#EF4444', fontSize: 14 }}>{error}</Text>
+          </View>
+        )}
+
+        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 6 }}>
+          Email
+        </Text>
         <TextInput
-          className="border border-gray-300 rounded-lg px-4 py-3 mb-4 text-base"
+          style={inputStyle}
           placeholder="you@example.com"
+          placeholderTextColor={colors.textMuted}
           autoCapitalize="none"
           keyboardType="email-address"
+          autoComplete="email"
           value={email}
           onChangeText={setEmail}
         />
 
-        <Text className="text-sm font-medium text-gray-700 mb-1">Password</Text>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: 6 }}>
+          Password
+        </Text>
         <TextInput
-          className="border border-gray-300 rounded-lg px-4 py-3 mb-6 text-base"
+          style={{ ...inputStyle, marginBottom: 24 }}
           placeholder="Password"
+          placeholderTextColor={colors.textMuted}
           secureTextEntry
+          autoComplete="current-password"
           value={password}
           onChangeText={setPassword}
+          onSubmitEditing={handleLogin}
         />
 
         <TouchableOpacity
-          className="bg-blue-600 rounded-lg py-3 items-center"
+          style={{
+            backgroundColor: loading ? colors.textMuted : colors.activeTab,
+            borderRadius: 14,
+            paddingVertical: 15,
+            alignItems: 'center',
+          }}
           onPress={handleLogin}
           disabled={loading}
         >
-          <Text className="text-white font-semibold text-base">
-            {loading ? 'Signing in…' : 'Sign In'}
-          </Text>
+          {loading ? (
+            <ActivityIndicator color={colors.buttonText} />
+          ) : (
+            <Text style={{ color: colors.buttonText, fontWeight: '700', fontSize: 16 }}>
+              Sign In
+            </Text>
+          )}
         </TouchableOpacity>
-      </View>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 28, gap: 4 }}>
+          <Text style={{ color: colors.textMuted, fontSize: 14 }}>Don&apos;t have an account?</Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/register' as never)}>
+            <Text style={{ color: colors.activeTab, fontSize: 14, fontWeight: '700' }}>Sign up</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   )
 }

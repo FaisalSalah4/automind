@@ -12,7 +12,8 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Tabs } from 'expo-router'
+import { useNavigation } from 'expo-router'
+import type { DrawerNavigationProp } from '@react-navigation/drawer'
 import { supabase } from '@/lib/supabase'
 import { predictUpcomingServices } from '@automind/shared'
 import type { Car, Reminder, ServicePrediction } from '@automind/shared'
@@ -24,9 +25,10 @@ const AMBER = '#F59E0B'
 const GREEN = '#10B981'
 
 export default function DashboardScreen() {
-  const { theme, colors, toggleTheme } = useTheme()
+  const { theme, colors } = useTheme()
   const { code, setCurrency } = useCurrency()
   const insets = useSafeAreaInsets()
+  const navigation = useNavigation<DrawerNavigationProp<Record<string, undefined>>>()
 
   const [cars, setCars] = useState<Car[]>([])
   const [selectedCarIndex, setSelectedCarIndex] = useState(0)
@@ -124,9 +126,6 @@ export default function DashboardScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      {/* Hide nav header — using custom header below */}
-      <Tabs.Screen options={{ headerShown: false }} />
-
       {/* Custom header */}
       <View
         style={{
@@ -139,17 +138,19 @@ export default function DashboardScreen() {
           backgroundColor: colors.bg,
         }}
       >
-        <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text, letterSpacing: -0.5 }}>
-          CarMind
-        </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <TouchableOpacity onPress={toggleTheme} style={{ padding: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <TouchableOpacity onPress={() => navigation.openDrawer()} style={{ padding: 4 }}>
             <Ionicons
-              name={theme === 'dark' ? 'sunny-outline' : 'moon-outline'}
-              size={22}
-              color={colors.textMuted}
+              name="menu"
+              size={24}
+              color={theme === 'dark' ? '#FFFFFF' : '#111827'}
             />
           </TouchableOpacity>
+          <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text, letterSpacing: -0.5 }}>
+            CarMind
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <TouchableOpacity
             onPress={() => setShowCurrencyPicker(true)}
             style={{

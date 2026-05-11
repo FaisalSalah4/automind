@@ -1,68 +1,50 @@
-import { Tabs } from 'expo-router'
+import { Drawer } from 'expo-router/drawer'
 import { Ionicons } from '@expo/vector-icons'
+import { TouchableOpacity, Dimensions } from 'react-native'
 import { useTheme } from '@/lib/theme'
+import { CustomDrawerContent } from '@/components/DrawerContent'
 
-export default function TabLayout() {
-  const { colors } = useTheme()
+const DRAWER_WIDTH = Math.min(Dimensions.get('window').width * 0.75, 300)
+
+export default function DrawerLayout() {
+  const { theme, colors } = useTheme()
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.activeTab,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.tabBar,
-          borderTopColor: colors.tabBarBorder,
-          borderTopWidth: 1,
+    <Drawer
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={({ navigation }) => ({
+        drawerStyle: {
+          backgroundColor: colors.bg,
+          width: DRAWER_WIDTH,
+          borderRightWidth: 1,
+          borderRightColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#E5E7EB',
         },
-        headerShown: true,
+        drawerType: 'front',
+        overlayColor: 'rgba(0,0,0,0.5)',
         headerStyle: { backgroundColor: colors.bg },
         headerTintColor: colors.text,
         headerShadowVisible: false,
-      }}
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => navigation.openDrawer()}
+            style={{ paddingLeft: 16, paddingRight: 8 }}
+          >
+            <Ionicons
+              name="menu"
+              size={24}
+              color={theme === 'dark' ? '#FFFFFF' : '#111827'}
+            />
+          </TouchableOpacity>
+        ),
+      })}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => <Ionicons name="speedometer" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="cars"
-        options={{
-          title: 'Cars',
-          tabBarIcon: ({ color, size }) => <Ionicons name="car" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="maintenance"
-        options={{
-          title: 'Maintenance',
-          tabBarIcon: ({ color, size }) => <Ionicons name="construct" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="fuel"
-        options={{
-          title: 'Fuel',
-          tabBarIcon: ({ color, size }) => <Ionicons name="flame" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="accidents"
-        options={{
-          title: 'Accidents',
-          tabBarIcon: ({ color, size }) => <Ionicons name="warning" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'AI Chat',
-          tabBarIcon: ({ color, size }) => <Ionicons name="chatbubble-ellipses" size={size} color={color} />,
-        }}
-      />
-    </Tabs>
+      <Drawer.Screen name="index" options={{ headerShown: false }} />
+      <Drawer.Screen name="cars" options={{ title: 'Cars' }} />
+      <Drawer.Screen name="maintenance" options={{ title: 'Maintenance' }} />
+      <Drawer.Screen name="fuel" options={{ title: 'Fuel' }} />
+      <Drawer.Screen name="accidents" options={{ title: 'Accidents' }} />
+      <Drawer.Screen name="reminders" options={{ title: 'Reminders' }} />
+      <Drawer.Screen name="chat" options={{ title: 'AI Chat' }} />
+    </Drawer>
   )
 }

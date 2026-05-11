@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter, useSegments } from 'expo-router'
 import type { Session } from '@supabase/supabase-js'
 import { ThemeProvider } from '@/lib/theme'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 function AuthGuard({ session }: { session: Session | null | undefined }) {
   const segments = useSegments()
@@ -35,14 +36,16 @@ export default function RootLayout() {
   }, [])
 
   return (
-    <ThemeProvider>
-      <>
-        <AuthGuard session={session} />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="(auth)" />
-        </Stack>
-      </>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <>
+          <AuthGuard session={session} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="(auth)" />
+          </Stack>
+        </>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   )
 }

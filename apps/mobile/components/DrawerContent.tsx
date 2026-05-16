@@ -5,6 +5,7 @@ import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useTheme } from '@/lib/theme'
+import { usePinnedTabs, ALL_TABS } from '@/lib/tabConfig'
 import { supabase } from '@/lib/supabase'
 
 const CYAN = '#22D3EE'
@@ -28,9 +29,14 @@ const NAV_ITEMS: NavItem[] = [
 
 export function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { theme, colors, toggleTheme } = useTheme()
+  const { pinnedTabs } = usePinnedTabs()
   const router = useRouter()
 
   const activeName = props.state.routes[props.state.index]?.name ?? ''
+
+  function isRoutePinned(routeName: string): boolean {
+    return ALL_TABS.some((t) => t.route === routeName && pinnedTabs.includes(t.key))
+  }
 
   async function signOut() {
     await supabase.auth.signOut()
@@ -54,6 +60,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
       >
         {NAV_ITEMS.map((item) => {
           const active = activeName === item.name
+          const pinned = isRoutePinned(item.name)
           return (
             <TouchableOpacity
               key={item.name}
@@ -80,6 +87,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
               />
               <Text
                 style={{
+                  flex: 1,
                   fontSize: 15,
                   fontWeight: active ? '600' : '500',
                   color: active ? CYAN : colors.text,
@@ -87,6 +95,16 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
               >
                 {item.label}
               </Text>
+              {pinned && (
+                <View
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: colors.activeTab,
+                  }}
+                />
+              )}
             </TouchableOpacity>
           )
         })}

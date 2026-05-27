@@ -12,11 +12,13 @@ import {
   Platform,
   Alert,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import { predictUpcomingServices } from '@automind/shared'
 import type { Car, MaintenanceLog, ServicePrediction } from '@automind/shared'
 import { useCurrency } from '@/lib/currency'
 import { useTheme } from '@/lib/theme'
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar'
 
 const TYPE_OPTIONS = [
   { value: 'oil_change', label: 'Oil Change' },
@@ -30,6 +32,7 @@ type ServiceType = (typeof TYPE_OPTIONS)[number]['value']
 
 export default function MaintenanceScreen() {
   const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
   const [car, setCar] = useState<Car | null>(null)
   const [logs, setLogs] = useState<MaintenanceLog[]>([])
   const [predictions, setPredictions] = useState<ServicePrediction[]>([])
@@ -151,6 +154,7 @@ export default function MaintenanceScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT + insets.bottom }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.activeTab} />
         }
@@ -250,8 +254,8 @@ export default function MaintenanceScreen() {
         onPress={() => setShowForm(true)}
         style={{
           position: 'absolute',
-          bottom: 24,
-          right: 24,
+          bottom: TAB_BAR_HEIGHT + insets.bottom + 16,
+          right: 16,
           backgroundColor: colors.activeTab,
           width: 56,
           height: 56,

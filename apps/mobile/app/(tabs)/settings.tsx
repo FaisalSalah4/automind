@@ -7,13 +7,16 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/lib/theme'
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar'
 
 export default function SettingsScreen() {
   const { theme, colors, toggleTheme } = useTheme()
+  const insets = useSafeAreaInsets()
   const [email, setEmail] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -78,8 +81,8 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <View style={{ paddingHorizontal: 16, paddingBottom: 40 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT + insets.bottom }}>
+      <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
 
         {/* Account */}
         <Text

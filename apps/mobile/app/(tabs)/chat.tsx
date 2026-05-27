@@ -9,9 +9,11 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import type { Car } from '@automind/shared'
 import { useTheme } from '@/lib/theme'
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar'
 
 const WEB_APP_URL = process.env.EXPO_PUBLIC_WEB_URL ?? 'http://localhost:3000'
 
@@ -22,6 +24,7 @@ interface Message {
 
 export default function ChatScreen() {
   const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
   const [cars, setCars] = useState<Car[]>([])
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -177,7 +180,9 @@ export default function ChatScreen() {
 
       <View
         style={{
-          padding: 12,
+          paddingTop: 12,
+          paddingHorizontal: 12,
+          paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
           borderTopWidth: 1,
           borderTopColor: colors.cardBorder,
           backgroundColor: colors.card,

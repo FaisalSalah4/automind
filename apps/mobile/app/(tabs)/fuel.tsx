@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import type { Car, FuelLog } from '@automind/shared'
 import { useCurrency } from '@/lib/currency'
 import { useTheme } from '@/lib/theme'
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar'
 
 interface FuelLogWithConsumption extends FuelLog {
   consumption: number | null
@@ -11,6 +13,7 @@ interface FuelLogWithConsumption extends FuelLog {
 
 export default function FuelScreen() {
   const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
   const [car, setCar] = useState<Car | null>(null)
   const [logs, setLogs] = useState<FuelLogWithConsumption[]>([])
   const [refreshing, setRefreshing] = useState(false)
@@ -100,6 +103,7 @@ export default function FuelScreen() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.bg }}
+      contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT + insets.bottom }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.activeTab} />
       }

@@ -6,8 +6,6 @@ import { CustomDrawerContent } from '@/components/DrawerContent'
 import { BottomTabBar } from '@/components/BottomTabBar'
 
 const DRAWER_WIDTH = Math.min(Dimensions.get('window').width * 0.75, 300)
-// Extra bottom padding added to every screen so content isn't hidden behind the tab bar.
-const SCENE_PADDING_BOTTOM = 60
 
 export default function DrawerLayout() {
   const { theme, colors } = useTheme()
@@ -28,7 +26,6 @@ export default function DrawerLayout() {
           headerStyle: { backgroundColor: colors.bg },
           headerTintColor: colors.text,
           headerShadowVisible: false,
-          sceneContainerStyle: { paddingBottom: SCENE_PADDING_BOTTOM },
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => navigation.openDrawer()}

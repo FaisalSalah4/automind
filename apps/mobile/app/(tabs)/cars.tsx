@@ -13,9 +13,11 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import type { Car } from '@automind/shared'
 import { useTheme } from '@/lib/theme'
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar'
 
 interface CarFormState {
   name: string
@@ -60,6 +62,7 @@ function validateForm(form: CarFormState): string | null {
 
 export default function CarsScreen() {
   const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
   const [cars, setCars] = useState<Car[]>([])
   const [refreshing, setRefreshing] = useState(false)
 
@@ -254,6 +257,7 @@ export default function CarsScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT + insets.bottom }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.activeTab} />
         }

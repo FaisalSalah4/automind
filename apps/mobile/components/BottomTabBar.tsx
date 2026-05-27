@@ -9,6 +9,8 @@ import { usePinnedTabs, ALL_TABS } from '@/lib/tabConfig'
 import type { TabDefinition } from '@/lib/tabConfig'
 import { TabCustomizer } from '@/components/TabCustomizer'
 
+export const TAB_BAR_HEIGHT = 60
+
 function pathnameToTabKey(pathname: string): string {
   if (pathname === '/' || pathname === '') return 'dashboard'
   if (pathname === '/chat') return 'ai-chat'

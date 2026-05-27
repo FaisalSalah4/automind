@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import type { Car, Reminder } from '@automind/shared'
 import { useTheme } from '@/lib/theme'
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar'
 
 const AMBER = '#F59E0B'
 const RED = '#EF4444'
@@ -156,7 +157,7 @@ export default function RemindersScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: TAB_BAR_HEIGHT + insets.bottom + 16 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.activeTab} />
         }
@@ -330,7 +331,7 @@ export default function RemindersScreen() {
           onPress={() => setShowForm(true)}
           style={{
             position: 'absolute',
-            bottom: insets.bottom + 24,
+            bottom: TAB_BAR_HEIGHT + insets.bottom + 16,
             right: 20,
             backgroundColor: colors.activeTab,
             width: 56,

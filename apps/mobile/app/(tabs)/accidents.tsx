@@ -12,9 +12,11 @@ import {
   Platform,
   Alert,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import type { AccidentLog } from '@automind/shared'
 import { useTheme } from '@/lib/theme'
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar'
 
 const STATUS_LABELS: Record<string, string> = {
   open: 'Open',
@@ -34,6 +36,7 @@ const STATUS_OPTIONS = ['open', 'in_repair', 'settled', 'closed'] as const
 
 export default function AccidentsScreen() {
   const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
   const [carId, setCarId] = useState<string | null>(null)
   const [accidents, setAccidents] = useState<AccidentLog[]>([])
   const [refreshing, setRefreshing] = useState(false)
@@ -140,6 +143,7 @@ export default function AccidentsScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT + insets.bottom }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.activeTab} />
         }
@@ -213,8 +217,8 @@ export default function AccidentsScreen() {
         onPress={() => setShowForm(true)}
         style={{
           position: 'absolute',
-          bottom: 24,
-          right: 24,
+          bottom: TAB_BAR_HEIGHT + insets.bottom + 16,
+          right: 16,
           backgroundColor: colors.activeTab,
           width: 56,
           height: 56,

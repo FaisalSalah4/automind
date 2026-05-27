@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from 'expo-router'
 import type { DrawerNavigationProp } from '@react-navigation/drawer'
 import { supabase } from '@/lib/supabase'
+import { TAB_BAR_HEIGHT } from '@/components/BottomTabBar'
 import { predictUpcomingServices } from '@automind/shared'
 import type { Car, Reminder, ServicePrediction } from '@automind/shared'
 import { useCurrency, CURRENCIES } from '@/lib/currency'
@@ -187,7 +188,7 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.activeTab} />
         }
       >
-        <View style={{ paddingHorizontal: 16, paddingBottom: 32, gap: 12 }}>
+        <View style={{ paddingHorizontal: 16, paddingBottom: TAB_BAR_HEIGHT + insets.bottom, gap: 12 }}>
           {/* Hero Car Card */}
           {selectedCar ? (
             <View

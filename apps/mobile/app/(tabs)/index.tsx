@@ -8,7 +8,8 @@ import {
   Modal,
   Pressable,
   TextInput,
-  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -39,6 +40,8 @@ export default function DashboardScreen() {
   const [showMileageEdit, setShowMileageEdit] = useState(false)
   const [mileageInput, setMileageInput] = useState('')
   const [savingMileage, setSavingMileage] = useState(false)
+  const [mileageError, setMileageError] = useState<string | null>(null)
+  const [mileageSaved, setMileageSaved] = useState(false)
 
   async function loadStats(car: Car) {
     const [{ data: maintenance }, { data: remindersData }] = await Promise.all([
@@ -95,16 +98,23 @@ export default function DashboardScreen() {
   async function saveMileage() {
     const selectedCar = cars[selectedCarIndex]
     if (!selectedCar) return
-    const km = parseInt(mileageInput)
-    if (isNaN(km) || km < 0) {
-      Alert.alert('Invalid', 'Please enter a valid mileage.')
+    const km = parseInt(mileageInput, 10)
+    if (isNaN(km)) {
+      setMileageError('Please enter a valid number.')
       return
     }
+    if (km < selectedCar.current_mileage) {
+      setMileageError(`Can't go below ${selectedCar.current_mileage.toLocaleString()} km.`)
+      return
+    }
+    setMileageError(null)
     setSavingMileage(true)
     await supabase.from('cars').update({ current_mileage: km }).eq('id', selectedCar.id)
     setSavingMileage(false)
     setShowMileageEdit(false)
     await load()
+    setMileageSaved(true)
+    setTimeout(() => setMileageSaved(false), 2000)
   }
 
   const selectedCar = cars[selectedCarIndex] ?? null
@@ -274,6 +284,7 @@ export default function DashboardScreen() {
                   <TouchableOpacity
                     onPress={() => {
                       setMileageInput(selectedCar.current_mileage.toString())
+                      setMileageError(null)
                       setShowMileageEdit(true)
                     }}
                     style={{ padding: 4 }}
@@ -554,6 +565,30 @@ export default function DashboardScreen() {
         </Pressable>
       </Modal>
 
+      {/* Mileage update success banner */}
+      {mileageSaved && (
+        <View
+          style={{
+            position: 'absolute',
+            top: insets.top + 56,
+            left: 16,
+            right: 16,
+            backgroundColor: 'rgba(16,185,129,0.15)',
+            borderRadius: 12,
+            padding: 12,
+            borderWidth: 1,
+            borderColor: 'rgba(16,185,129,0.4)',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            zIndex: 100,
+          }}
+        >
+          <Ionicons name="checkmark-circle" size={18} color={GREEN} />
+          <Text style={{ color: GREEN, fontWeight: '600', fontSize: 14 }}>Mileage updated</Text>
+        </View>
+      )}
+
       {/* Mileage quick-edit modal */}
       <Modal
         visible={showMileageEdit}
@@ -561,66 +596,95 @@ export default function DashboardScreen() {
         animationType="slide"
         onRequestClose={() => setShowMileageEdit(false)}
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
-          onPress={() => setShowMileageEdit(false)}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <Pressable onPress={() => {}}>
-            <View
-              style={{
-                backgroundColor: colors.input,
-                borderTopLeftRadius: 24,
-                borderTopRightRadius: 24,
-                padding: 24,
-                paddingBottom: insets.bottom + 24,
-                borderTopWidth: 1,
-                borderColor: colors.cardBorder,
-              }}
-            >
-              <Text style={{ fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 4 }}>
-                Update Mileage
-              </Text>
-              <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 16 }}>
-                {selectedCar?.name}
-              </Text>
-              <TextInput
+          <Pressable
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
+            onPress={() => setShowMileageEdit(false)}
+          >
+            <Pressable onPress={() => {}}>
+              <View
                 style={{
-                  backgroundColor: colors.card,
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 14,
-                  color: colors.text,
-                  fontSize: 24,
-                  fontWeight: '700',
-                  borderWidth: 1,
+                  backgroundColor: colors.input,
+                  borderTopLeftRadius: 24,
+                  borderTopRightRadius: 24,
+                  padding: 24,
+                  paddingBottom: insets.bottom + 24,
+                  borderTopWidth: 1,
                   borderColor: colors.cardBorder,
-                  textAlign: 'center',
-                }}
-                value={mileageInput}
-                onChangeText={setMileageInput}
-                keyboardType="number-pad"
-                placeholder="Enter km"
-                placeholderTextColor={colors.textMuted}
-                autoFocus
-              />
-              <TouchableOpacity
-                onPress={saveMileage}
-                disabled={savingMileage}
-                style={{
-                  backgroundColor: savingMileage ? colors.textMuted : colors.activeTab,
-                  borderRadius: 14,
-                  paddingVertical: 14,
-                  alignItems: 'center',
-                  marginTop: 16,
                 }}
               >
-                <Text style={{ color: colors.buttonText, fontWeight: '700', fontSize: 16 }}>
-                  {savingMileage ? 'Saving…' : 'Save Mileage'}
+                <Text style={{ fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 4 }}>
+                  Update Mileage
                 </Text>
-              </TouchableOpacity>
-            </View>
+                <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 16 }}>
+                  Current: {selectedCar?.current_mileage.toLocaleString()} km · {selectedCar?.name}
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: colors.card,
+                    borderRadius: 12,
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    color: colors.text,
+                    fontSize: 28,
+                    fontWeight: '700',
+                    borderWidth: 1,
+                    borderColor: mileageError ? '#EF4444' : colors.cardBorder,
+                    textAlign: 'center',
+                  }}
+                  value={mileageInput}
+                  onChangeText={(v) => {
+                    setMileageInput(v)
+                    setMileageError(null)
+                  }}
+                  keyboardType="numeric"
+                  placeholder={selectedCar?.current_mileage.toString() ?? '0'}
+                  placeholderTextColor={colors.textMuted}
+                  autoFocus
+                />
+                {mileageError ? (
+                  <Text style={{ color: '#EF4444', fontSize: 13, marginTop: 6, textAlign: 'center' }}>
+                    {mileageError}
+                  </Text>
+                ) : null}
+                <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+                  <TouchableOpacity
+                    onPress={() => setShowMileageEdit(false)}
+                    style={{
+                      flex: 1,
+                      backgroundColor: colors.card,
+                      borderRadius: 14,
+                      paddingVertical: 14,
+                      alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: colors.cardBorder,
+                    }}
+                  >
+                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 16 }}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={saveMileage}
+                    disabled={savingMileage}
+                    style={{
+                      flex: 1,
+                      backgroundColor: savingMileage ? colors.textMuted : colors.activeTab,
+                      borderRadius: 14,
+                      paddingVertical: 14,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: colors.buttonText, fontWeight: '700', fontSize: 16 }}>
+                      {savingMileage ? 'Saving…' : 'Save'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Pressable>
           </Pressable>
-        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )

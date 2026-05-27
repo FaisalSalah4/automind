@@ -50,6 +50,7 @@ export default function DrawerLayout() {
         <Drawer.Screen name="accidents" options={{ title: 'Accidents' }} />
         <Drawer.Screen name="reminders" options={{ title: 'Reminders' }} />
         <Drawer.Screen name="chat" options={{ title: 'AI Chat' }} />
+        <Drawer.Screen name="settings" options={{ title: 'Settings' }} />
       </Drawer>
 
       <BottomTabBar />

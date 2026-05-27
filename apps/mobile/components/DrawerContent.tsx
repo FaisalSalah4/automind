@@ -1,5 +1,5 @@
-import React from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
+import React, { useState } from 'react'
+import { View, Text, TouchableOpacity, Alert } from 'react-native'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { Ionicons } from '@expo/vector-icons'
@@ -25,12 +25,14 @@ const NAV_ITEMS: NavItem[] = [
   { name: 'accidents', label: 'Accidents', icon: 'warning' },
   { name: 'reminders', label: 'Reminders', icon: 'notifications' },
   { name: 'chat', label: 'AI Chat', icon: 'chatbubble-ellipses' },
+  { name: 'settings', label: 'Settings', icon: 'settings-outline' },
 ]
 
 export function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { theme, colors, toggleTheme } = useTheme()
   const { pinnedTabs } = usePinnedTabs()
   const router = useRouter()
+  const [deleting, setDeleting] = useState(false)
 
   const activeName = props.state.routes[props.state.index]?.name ?? ''
 
@@ -41,6 +43,60 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
   async function signOut() {
     await supabase.auth.signOut()
     router.replace('/(auth)/login')
+  }
+
+  function deleteAccount() {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all your data. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true)
+            try {
+              const { data: { user } } = await supabase.auth.getUser()
+              if (!user) throw new Error('No user found')
+
+              const { data: userCars } = await supabase
+                .from('cars')
+                .select('id')
+                .eq('user_id', user.id)
+
+              const carIds = (userCars ?? []).map((c) => c.id)
+
+              await supabase.from('reminders').delete().eq('user_id', user.id)
+
+              if (carIds.length > 0) {
+                await supabase.from('maintenance_logs').delete().in('car_id', carIds)
+                await supabase.from('fuel_logs').delete().in('car_id', carIds)
+                await supabase.from('accident_logs').delete().in('car_id', carIds)
+              }
+
+              await supabase.from('cars').delete().eq('user_id', user.id)
+
+              const { error: rpcError } = await supabase.rpc('delete_user')
+              await supabase.auth.signOut()
+
+              if (rpcError) {
+                Alert.alert(
+                  'Data Deleted',
+                  'Your data has been deleted. Contact support to remove your account login.'
+                )
+              }
+
+              router.replace('/(auth)/login')
+            } catch {
+              Alert.alert('Error', 'Something went wrong. Please try again.')
+            } finally {
+              setDeleting(false)
+            }
+          },
+        },
+      ]
+    )
   }
 
   return (
@@ -146,7 +202,31 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
           <Text style={{ fontSize: 15, fontWeight: '500', color: '#EF4444' }}>Sign Out</Text>
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: 8 }}>
+        <View style={{ height: 1, backgroundColor: colors.cardBorder }} />
+
+        <TouchableOpacity
+          onPress={deleteAccount}
+          disabled={deleting}
+          activeOpacity={0.7}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 11,
+            opacity: deleting ? 0.5 : 1,
+          }}
+        >
+          <Ionicons
+            name="trash-outline"
+            size={18}
+            color="#EF4444"
+            style={{ marginRight: 14 }}
+          />
+          <Text style={{ fontSize: 13, fontWeight: '500', color: '#EF4444' }}>
+            {deleting ? 'Deleting…' : 'Delete Account'}
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: 4 }}>
           v{APP_VERSION}
         </Text>
       </View>

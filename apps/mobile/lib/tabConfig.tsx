@@ -58,6 +58,13 @@ export const ALL_TABS: TabDefinition[] = [
     activeIcon: 'chatbubble-ellipses',
     route: 'chat',
   },
+  {
+    key: 'settings',
+    label: 'Settings',
+    icon: 'settings-outline',
+    activeIcon: 'settings',
+    route: 'settings',
+  },
 ]
 
 const DEFAULT_PINNED: string[] = ['dashboard', 'cars', 'maintenance', 'ai-chat']
